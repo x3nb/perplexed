@@ -4,15 +4,50 @@
 <meta charset="UTF-8" />
 <title>Collage Marionette Puppet</title>
 <style>
-  body { margin:0; background:#0b0e14; overflow:hidden; cursor: crosshair; }
+  body {
+    margin:0;
+    background: radial-gradient(circle at center, #1b1f3b 0%, #0b0e14 60%, #05070c 100%);
+    overflow:hidden;
+    cursor: crosshair;
+    color:#e6e8ff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
   svg { width:100vw; height:100vh; }
-  .string { stroke: rgba(200,200,255,0.5); stroke-width:1.5; }
+  .string { stroke: rgba(200,200,255,0.45); stroke-width:1.5; filter:url(#stringGlow); }
   .joint { fill: rgba(180,180,255,0.8); }
+  .dust { fill: rgba(200,210,255,0.25); animation: float 18s linear infinite; }
+  @keyframes float { from { transform: translateY(10px);} to { transform: translateY(-30px);} }
+  #ui input { background: rgba(20,24,46,0.8); color:#eef; border:1px solid rgba(120,140,255,0.35); border-radius:10px; }
+  #ui button { background:#6f7cff; color:#0b0e14; border:none; border-radius:10px; padding:8px 14px; }
 </style>
 </head>
 <body>
 
 <svg id="stage" viewBox="0 0 1000 700">
+  <defs>
+    <radialGradient id="spot" cx="50%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="rgba(190,200,255,0.35)" />
+      <stop offset="100%" stop-color="rgba(190,200,255,0.0)" />
+    </radialGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b" />
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="stringGlow">
+      <feGaussianBlur stdDeviation="1.2" />
+    </filter>
+  </defs>
+
+  <!-- Spotlight -->
+  <ellipse cx="500" cy="260" rx="360" ry="260" fill="url(#spot)" />
+  <!-- Ambient dust -->
+  <g id="dust">
+    <circle class="dust" cx="180" cy="420" r="1.2" />
+    <circle class="dust" cx="420" cy="380" r="1" />
+    <circle class="dust" cx="760" cy="460" r="1.4" />
+    <circle class="dust" cx="620" cy="300" r="0.9" />
+  </g>
+
   <!-- Banister -->
   <rect x="0" y="40" width="1000" height="10" fill="#777" />
 
@@ -20,7 +55,7 @@
   <circle id="target" cx="500" cy="400" r="8" fill="cornflowerblue" />
 
   <!-- Puppet -->
-  <g id="puppet" transform="translate(500 200)">
+  <g id="puppet" transform="translate(500 200)" filter="url(#softGlow)">
 
     <!-- Strings -->
     <line class="string" x1="0" y1="-150" x2="0" y2="-40" />
@@ -28,33 +63,35 @@
     <line class="string" x1="70" y1="-150" x2="50" y2="30" />
 
     <!-- Head -->
-    <image href="head2.png" x="-35" y="-70" width="70" height="70" />
- 
-   <!-- Body (side + front swap) -->
-   <image id="bodySide" href="body1.png" x="-45" y="0" width="90" height="120" />
-   <image id="bodyFront" href="cicadastyle2.png" x="-45" y="0" width="90" height="120" visibility="hidden" />    <!-- Left Arm (collage image) -->
+    <image href="head.jpg" x="-35" y="-70" width="70" height="70" />
+
+    <!-- Body (side + front swap) -->
+    <image id="bodySide" href="body_side.png" x="-45" y="0" width="90" height="120" />
+    <image id="bodyFront" href="body_front.png" x="-45" y="0" width="90" height="120" visibility="hidden" />
+
+    <!-- Left Arm (collage image) -->
     <g id="leftArm" transform="rotate(0 -45 30)">
-      <image href="army.png" x="-120" y="20" width="80" height="120" />
+      <image href="armL.png" x="-120" y="20" width="80" height="120" />
     </g>
 
     <!-- Right Arm -->
-    <g id="arrm.png" transform="rotate(0 45 30)">
-      <image href="armbend.png" x="40" y="20" width="80" height="120" />
+    <g id="rightArm" transform="rotate(0 45 30)">
+      <image href="armR.png" x="40" y="20" width="80" height="120" />
     </g>
 
     <!-- Left Leg -->
     <g id="leftLeg" transform="rotate(0 -20 120)">
-      <image href="leftleg.png" x="-60" y="120" width="60" height="150" />
+      <image href="legL.png" x="-60" y="120" width="60" height="150" />
     </g>
 
     <!-- Right Leg -->
     <g id="rightLeg" transform="rotate(0 20 120)">
-      <image href="rightleg.png" x="0" y="120" width="60" height="150" />
+      <image href="legR.png" x="0" y="120" width="60" height="150" />
     </g>
 
   </g>
   <!-- Speech Bubble -->
-  <g id="speech" visibility="hidden">
+    <g id="speech" visibility="hidden" filter="url(#softGlow)">
     <rect id="bubble" x="380" y="90" rx="12" ry="12" width="240" height="70" fill="rgba(255,255,255,0.9)" />
     <text id="bubbleText" x="400" y="130" font-size="14" fill="#111">Hello…</text>
   </g>
