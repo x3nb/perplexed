@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Collage Marionette Puppet</title>
+<style>
+  body { margin:0; background:#0b0e14; overflow:hidden; cursor: crosshair; }
+  svg { width:100vw; height:100vh; }
+  .string { stroke: rgba(200,200,255,0.5); stroke-width:1.5; }
+  .joint { fill: rgba(180,180,255,0.8); }
+</style>
+</head>
+<body>
+
+<svg id="stage" viewBox="0 0 1000 700">
+  <!-- Banister -->
+  <rect x="0" y="40" width="1000" height="10" fill="#777" />
+
+  <!-- Target Pointer -->
+  <circle id="target" cx="500" cy="400" r="8" fill="cornflowerblue" />
+
+  <!-- Puppet -->
+  <g id="puppet" transform="translate(500 200)">
+
+    <!-- Strings -->
+    <line class="string" x1="0" y1="-150" x2="0" y2="-40" />
+    <line class="string" x1="-70" y1="-150" x2="-50" y2="30" />
+    <line class="string" x1="70" y1="-150" x2="50" y2="30" />
+
+    <!-- Head -->
+    <image href="head2.png" x="-35" y="-70" width="70" height="70" />
+ 
+   <!-- Body (side + front swap) -->
+   <image id="bodySide" href="body1.png" x="-45" y="0" width="90" height="120" />
+   <image id="bodyFront" href="cicadastyle2.png" x="-45" y="0" width="90" height="120" visibility="hidden" />    <!-- Left Arm (collage image) -->
+    <g id="leftArm" transform="rotate(0 -45 30)">
+      <image href="army.png" x="-120" y="20" width="80" height="120" />
+    </g>
+
+    <!-- Right Arm -->
+    <g id="arrm.png" transform="rotate(0 45 30)">
+      <image href="armbend.png" x="40" y="20" width="80" height="120" />
+    </g>
+
+    <!-- Left Leg -->
+    <g id="leftLeg" transform="rotate(0 -20 120)">
+      <image href="leftleg.png" x="-60" y="120" width="60" height="150" />
+    </g>
+
+    <!-- Right Leg -->
+    <g id="rightLeg" transform="rotate(0 20 120)">
+      <image href="rightleg.png" x="0" y="120" width="60" height="150" />
+    </g>
+
+  </g>
+  <!-- Speech Bubble -->
+  <g id="speech" visibility="hidden">
+    <rect id="bubble" x="380" y="90" rx="12" ry="12" width="240" height="70" fill="rgba(255,255,255,0.9)" />
+    <text id="bubbleText" x="400" y="130" font-size="14" fill="#111">Hello…</text>
+  </g>
+</svg>
+
+<!-- Viewer Response UI -->
+<div id="ui" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px;">
+  <input id="response" placeholder="Say something to her…" style="padding:8px; width:260px;" />
+  <button id="speak">Send</button>
+</div>
+
+<script>
+  const puppet = document.getElementById('puppet');
+  const target = document.getElementById('target');
+  const stage = document.getElementById('stage');
+  const leftLeg = document.getElementById('leftLeg');
+  const bodySide = document.getElementById('bodySide');
+  const bodyFront = document.getElementById('bodyFront');
+  const speech = document.getElementById('speech');
+  const bubbleText = document.getElementById('bubbleText');
+  const rightLeg = document.getElementById('rightLeg');
+
+  let puppetX = 500;
+  let facing = 0; // 0 = profile, 1 = facing viewer
+  let walkPhase = 0;
+  let targetX = 500;
+
+  stage.addEventListener('click', e => {
+    const pt = stage.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(stage.getScreenCTM().inverse());
+    targetX = svgP.x;
+    target.setAttribute('cx', targetX);
+  });
+
+  function animate() {
+    const dx = targetX - puppetX;
+
+    // occasionally decide to face the viewer
+    if (Math.random() < 0.002) facing = facing === 0 ? 1 : 0;
+
+    if (Math.abs(dx) > 2) {
+      puppetX += Math.sign(dx) * 1.2;
+      walkPhase += 0.15;
+    }
+
+    const step = Math.sin(walkPhase) * 25;
+    leftLeg.setAttribute('transform', `rotate(${step} -20 120)`);
+    rightLeg.setAttribute('transform', `rotate(${-step} 20 120)`);
+
+    const flip = dx < 0 ? -1 : 1;
+    const rotateBody = facing ? 0 : 15 * flip;
+
+    // swap body image based on facing
+    if (facing) {
+      bodySide.setAttribute('visibility', 'hidden');
+      bodyFront.setAttribute('visibility', 'visible');
+    } else {
+      bodySide.setAttribute('visibility', 'visible');
+      bodyFront.setAttribute('visibility', 'hidden');
+    }
+
+    puppet.setAttribute(
+      'transform',
+      `translate(${puppetX} 200) scale(${flip} 1) rotate(${rotateBody})`
+    );
+
+    // show speech when facing viewer
+    if (facing) {
+      speech.setAttribute('visibility', 'visible');
+    } else {
+      speech.setAttribute('visibility', 'hidden');
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // simple dialogue system
+  const lines = [
+    "Are you leading me… or following?",
+    "I only move when you decide.",
+    "Do the strings bother you?",
+    "I can see you now."
+  ];
+
+  document.getElementById('speak').onclick = () => {
+    const input = document.getElementById('response');
+    const text = input.value.trim();
+    if (!text) return;
+
+    bubbleText.textContent = lines[Math.floor(Math.random() * lines.length)];
+    input.value = '';
+  };
+</script>
+
+</body>
+</html>
